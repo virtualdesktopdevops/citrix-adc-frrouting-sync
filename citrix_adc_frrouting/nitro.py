@@ -64,25 +64,25 @@ class NitroClient():
     return self._result
 
   def get_stat(self, objecttype, objectname = None, params = None):
-    return self.request(get, 'stat', objecttype, objectname, params)
+    return self.request('get', 'stat', objecttype, objectname, params)
 
   def get_config(self, objecttype, objectname = None, params = None):
-    return self.request(get, 'config', objecttype, objectname, params)
+    return self.request('get', 'config', objecttype, objectname, params)
 
   def post_stat(self, objecttype, objectname = None, params = None):
-    return self.request(post, 'stat', objecttype, objectname, params)
+    return self.request('post', 'stat', objecttype, objectname, params)
 
   def post_config(self, objecttype, objectname = None, params = None):
-    return self.request(post, 'config', objecttype, objectname, params)
+    return self.request('post', 'config', objecttype, objectname, params)
   
   def put_stat(self, objecttype, objectname = None, params = None):
-    return self.request(put, 'stat', objecttype, objectname, params)
+    return self.request('put', 'stat', objecttype, objectname, params)
 
   def put_config(self, objecttype, objectname = None, params = None):
-    return self.request(put, 'config', objecttype, objectname, params)
+    return self.request('put', 'config', objecttype, objectname, params)
 
   def delete_stat(self, objecttype, objectname = None, params = None):
-    return self.request(delete, 'stat', objecttype, objectname, params)
+    return self.request('delete', 'stat', objecttype, objectname, params)
 
   def delete_config(self, objecttype, objectname = None, params = None):
-    return self.request(delete, 'config', objecttype, objectname, params)
+    return self.request('delete', 'config', objecttype, objectname, params)
