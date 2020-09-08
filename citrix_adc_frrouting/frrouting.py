@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""frrouting.py: Python class to configure with FRROUTING"""
+"""frrouting.py: Python class to configure FRROUTING with vtysh shell utility"""
 
 import requests
 import subprocess
@@ -18,15 +18,22 @@ class FrroutingClient():
   
     def __exec_config_command(self, config_cmd):
         cmd = "vtysh -c 'configure terminal' -c '" + config_cmd +"'"
-        try:
-            os.system(cmd , shell=True)
-            return True
-        except:
-            return False
+        #try:
+        os.system(cmd)
+        print(cmd)
+        #return True
+        #except:
+        #    return False
 
     def get_static_routes(self):
         return self.__exec_show_command("show ip route static json")
     
     def get_routes_with_tag(self, tag):
         return self.__exec_show_command("show ip route tag " + str(tag) + " json")
+
+    def add_static_route_with_tag(self, ip_address, netmask, nexthop, tag):
+        self.__exec_config_command("ip route " + ip_address + " "+ netmask + " "+ nexthop + " tag " + str(tag))
+
+    def remove_static_route(self, ip_address, netmask, nexthop):
+        self.__exec_config_command("no ip route " + ip_address + " "+ netmask + " " + nexthop)
     

@@ -3,7 +3,7 @@
 import configparser
 import sys
 import getopt
-from citrix_adc_frrouting_sync import citrix_adc_frrouting_sync
+import citrix_adc_frrouting.sync
 
 def main(argv):
   configfile = ''
@@ -25,7 +25,12 @@ def main(argv):
 
   # Run sync
   if config.has_option('ADC', 'NITRO_URL') and config.has_option('ADC', 'PASSWORD') and config.has_option('ADC', 'LOGIN') and config.has_option('ADC', 'CONTAINER_IP_ADDRESS'):
-    citrix_adc_frrouting_sync.Sync(config['ADC']['NITRO_URL'], config['ADC']['LOGIN'], config['ADC']['PASSWORD'], config['ADC']['CONTAINER_IP_ADDRESS'])
+    sync_engine = citrix_adc_frrouting.sync.SyncService(
+      config['ADC']['NITRO_URL'], 
+      config['ADC']['LOGIN'], 
+      config['ADC']['PASSWORD'], 
+      config['ADC']['CONTAINER_IP_ADDRESS'])
+    sync_engine.start_sync()
   else:
     print('Missing at least one of the NITRO_URL, LOGIN, or PASSWORD configuration parameters')
 
