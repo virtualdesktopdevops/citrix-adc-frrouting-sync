@@ -2,9 +2,7 @@
 
 """frrouting.py: Python class to configure FRROUTING with vtysh shell utility"""
 
-import requests
 import subprocess
-import os
 import json
 
 class FrroutingClient():

@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="VirtualDesktopDevops",
     author_email="author@example.com",
-    description="Python application to advertise RHI enabled Citrix ADC CPX & BLX virtual IP addresses in the network using FRROUTING linux routing stack.",
+    description="Python application to advertise RHI enabled Citrix ADC CPX virtual IP addresses in the network using Frrouting router.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/virtualdesktopdevops/citrix-adc-frrouting-sync",
