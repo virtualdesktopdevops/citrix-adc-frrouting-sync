@@ -18,12 +18,13 @@ class FrroutingClient():
   
     def __exec_config_command(self, config_cmd):
         cmd = "vtysh -c 'configure terminal' -c '" + config_cmd +"'"
-        #try:
-        os.system(cmd)
-        print(cmd)
-        #return True
-        #except:
-        #    return False
+        try:
+            output = subprocess.check_output(cmd , shell=True)
+            print(cmd)
+            return True
+        except:
+            print("ERROR during "+ cmd + " execution")
+            return False
 
     def get_static_routes(self):
         return self.__exec_show_command("show ip route static json")
