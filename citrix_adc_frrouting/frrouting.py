@@ -11,8 +11,12 @@ class FrroutingClient():
 
     def __exec_show_command(self, show_cmd):
         cmd = "vtysh -c '" + show_cmd +"'"
-        raw_vtysh_data = subprocess.check_output(cmd , shell=True)
-        return json.loads(raw_vtysh_data.decode('utf-8'))
+        try:
+            raw_vtysh_data = subprocess.check_output(cmd , shell=True)
+            print(cmd)
+            return json.loads(raw_vtysh_data.decode('utf-8'))
+        except:
+            print("ERROR during "+ cmd + " execution")
   
     def __exec_config_command(self, config_cmd):
         cmd = "vtysh -c 'configure terminal' -c '" + config_cmd +"'"
