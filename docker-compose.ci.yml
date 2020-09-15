@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  cpx_130:
+    image: store/citrix/citrixadccpx:13.0-36.29
+    ports:
+      - '9080:9080'
+      - '9443:9443'
+    environment:
+      EULA: 'yes'
+      PLATFORM: 'CP1000'
+    privileged: true
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.3
+
+networks:
+  my-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
