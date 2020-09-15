@@ -10,8 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  unit_testing:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -37,3 +36,32 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+
+
+  integration_testing:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
+        FRRVER="frr-stable"
+        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        sudo apt update && sudo apt install frr frr-pythontools
+    - name: Configure integration testing environment
+      run: |
+        echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
+        docker-compose -f docker-compose.ci.yml up -d
+        docker ps
+        echo 'Waiting for Citrix ADC CPX initialization (90s)'
+        sleep 90
+        echo 'Testing NITRO API access'
+        curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
+    - name: Integration testing with Citrix ADC CPX 13
+      run: |
+        echo "test to be included"
+
