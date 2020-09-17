@@ -58,8 +58,8 @@ jobs:
         echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
         docker-compose -f docker-compose.ci.yml up -d
         docker ps
-        echo 'Waiting for Citrix ADC CPX initialization and /etc/cpx.conf config injection(120s)'
-        sleep 120
+        echo 'Waiting for Citrix ADC CPX initialization and /etc/cpx.conf config injection(150s)'
+        sleep 150
         echo 'Testing NITRO API access'
         curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
     - name: Integration testing with Citrix ADC CPX 13
@@ -67,7 +67,7 @@ jobs:
         echo "########### Testing route injection when LB vserver is up "###########"
         sudo ./run.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
-        echo "########### Disable service to down LB vserver to test rute withdrawal "###########"
+        echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -it citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
         sudo vtysh -c 'show ip route tag 99'
 
