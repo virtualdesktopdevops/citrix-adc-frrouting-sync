@@ -64,7 +64,7 @@ jobs:
         curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
     - name: Integration testing with Citrix ADC CPX 13
       run: |
-        echo "########### Testing route injection when LB vserver is up "###########"
+        echo "########### Testing route injection when LB vserver is up ###########"
         sudo ./run.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
