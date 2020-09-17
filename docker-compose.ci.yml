@@ -4,19 +4,31 @@ services:
   cpx_130:
     image: store/citrix/citrixadccpx:13.0-36.29
     ports:
-      - '9080:9080'
-      - '9443:9443'
+      - 443:443/tcp
+      - 80:80/tcp
+      - 161:161/udp
+      - 9080:9080/tcp
+      - 3003:3003/udp
+      - 3008:3008/tcp
+      - 8873:8873/tcp
+    tty: false
+    cap_add:
+      - NET_ADMIN
+    ulimits:
+      core: -1
+    volumes:
+      - ./sample-config/cpx.conf:/etc/cpx.conf
     environment:
       EULA: 'yes'
       PLATFORM: 'CP1000'
     privileged: true
     networks:
-      my-network:
-        ipv4_address: 172.20.0.3
+      cpx_net:
+        ipv4_address: 172.18.0.254
 
 networks:
-  my-network:
+  cpx_net:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.18.0.0/16
