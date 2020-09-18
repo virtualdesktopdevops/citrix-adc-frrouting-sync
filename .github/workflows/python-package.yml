@@ -75,5 +75,6 @@ jobs:
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
+        sudo ./run.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
 
