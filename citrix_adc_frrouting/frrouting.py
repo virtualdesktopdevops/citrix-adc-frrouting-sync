@@ -4,6 +4,9 @@
 
 import subprocess
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class FrroutingClient():
     def __init__(self):
@@ -13,19 +16,19 @@ class FrroutingClient():
         cmd = "vtysh -c '" + show_cmd +"'"
         try:
             raw_vtysh_data = subprocess.check_output(cmd , shell=True)
-            print(cmd)
+            logger.debug(cmd)
             return json.loads(raw_vtysh_data.decode('utf-8'))
         except:
-            print("ERROR during "+ cmd + " execution")
+            logger.error("Error during "+ cmd + " execution")
   
     def __exec_config_command(self, config_cmd):
         cmd = "vtysh -c 'configure terminal' -c '" + config_cmd +"'"
         try:
             output = subprocess.check_output(cmd , shell=True)
-            print(cmd)
+            logger.debug(cmd)
             return True
         except:
-            print("ERROR during "+ cmd + " execution")
+            logger.error("Error during "+ cmd + " execution")
             return False
 
     def get_static_routes(self):

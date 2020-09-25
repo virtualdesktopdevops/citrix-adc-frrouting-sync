@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import logging
+import time
+import requests
 from .nitro import NitroClient
 from .frrouting import FrroutingClient
+
+logger = logging.getLogger(__name__)
 
 class SyncService():
   def __init__(self, url, username, password, nexthop):
@@ -13,11 +18,20 @@ class SyncService():
     self.nexthop = nexthop
     self.nitro_url = url
 
+  def start_sync_daemon(self):
+    logger.info("Initializing periodic sync every 5 seconds as daemon")
+    while True:
+      logger.info("Beginning sync")
+      self.start_sync()
+      logger.info("End of sync")
+      time.sleep(5)  
+
+
   def start_sync(self):
     # Extract FRRouting configured hostroutes for ADC VIP
     frrouting_vip_routes_to_process = self.__get_frrouting_hostroutes("99")
-    print("Host routes already configured in FRRouting : " + str(frrouting_vip_routes_to_process))
-    print("Beginning sync with Citrix ADC.")
+    logger.info("Host routes already configured in FRRouting : " + str(frrouting_vip_routes_to_process))
+    logger.info("Beginning sync with Citrix ADC.")
     
     # Do the request to the NITRO API
     # Filter for VIP IP addresses to ignore SNIP and NSIP
@@ -30,8 +44,8 @@ class SyncService():
       # Make sure that no deleted VIP remains in frrouting by removing all the static routes for VIP remaining in frrouting_vip_routes_to_process
       self.__remove_orphaned_hostroutes(orphaned_frrouting_routes, self.nexthop)
     else:
-      print('ERROR : Unable to connect parse Virtual IP addresses in Nitro response')
-      #print(result.__dict__)
+      logger.error('Unable to connect parse Virtual IP addresses in Nitro response')
+
 
   def __get_frrouting_hostroutes(self, tag):
     # Create an empty set on which all the frrouting configured VIP will be injected. 
@@ -39,11 +53,13 @@ class SyncService():
     
     # Create a list of prefixes matching for which configured nexthop matches nexthop parameter
     hostroutes = self.frr_client.get_routes_with_tag(tag)
-    for route in hostroutes:
+    if isinstance(hostroutes,dict):
+      for route in hostroutes:
           ipaddresses_set.add(route.split('/')[0])
 
     # Return ipaddresses_set unordered list of unique VIP.
     return ipaddresses_set
+
 
   def __get_adc_virtual_ipaddresses(self):
     try:
@@ -53,9 +69,11 @@ class SyncService():
           objecttype="nsip",
           params="args=type:VIP"
       ).json()
-    except:
-      print("ERROR : Unable to connect to Citrix ADC NITRO API at " + self.nitro_url)
-      exit()
+    except requests.exceptions.ConnectionError as ex:
+      print(ex)
+      logger.error("Unable to connect to Citrix ADC NITRO API at " + self.nitro_url)
+      return {}
+
 
   def __sync_routes_with_active_virtual_ipaddresses(self, virtual_ipaddresses, frrouting_vip_routes_to_process, nexthop):
     for vip in virtual_ipaddresses['nsip']:
@@ -63,7 +81,7 @@ class SyncService():
         # vip['viprtadv2bsd'] is true when Citrix ADC wants to advertise hostroute to the network
         if vip['state'] == 'ENABLED' and vip['hostroute'] == 'ENABLED' and vip['viprtadv2bsd'] and vip['ipaddress'] not in frrouting_vip_routes_to_process:
           #Inject route using vtysh cli command
-          print("Injecting new VIP "+ vip['ipaddress'] + " into routing table")
+          logger.info("Injecting new VIP "+ vip['ipaddress'] + " into routing table")
           self.frr_client.add_static_route_with_tag(vip['ipaddress'], "255.255.255.255", nexthop, 99)
 
         # IF state = ENABLED & hostroute=ENABLED & vipvipvsrvrrhiactiveupcount > 0 & route already in routing table=> do nothing
@@ -75,7 +93,7 @@ class SyncService():
         # vip['viprtadv2bsd'] is false when Citrix ADC wants to remote hostroute from the network
         elif (vip['state'] == 'DISABLED' or vip['hostroute'] == 'DISABLED' or not vip['viprtadv2bsd'] ) and (vip['ipaddress'] in frrouting_vip_routes_to_process):
           #Remove route using vtysh cli command
-          print("Removing down/disabled VIP "+ vip['ipaddress'] + " from routing table")
+          logger.info("Removing down/disabled VIP "+ vip['ipaddress'] + " from routing table")
           self.frr_client.remove_static_route(vip['ipaddress'], "255.255.255.255", nexthop)
           #Remove VIP from frrouting_vip_routes_to_process as it has been processed
           frrouting_vip_routes_to_process.remove(vip['ipaddress'])
@@ -84,9 +102,10 @@ class SyncService():
     #All the existing VIP in Citrix ADC (active or inactive) have been removed from this list
     return frrouting_vip_routes_to_process
 
+
   def __remove_orphaned_hostroutes(self, ip_addresses_dict, nexthop):
     for ip_address in ip_addresses_dict:
-      print("Removing deleted VIP "+ ip_address + " from routing table")
+      logger.info("Removing deleted VIP "+ ip_address + " from routing table")
       self.frr_client.remove_static_route(ip_address, "255.255.255.255", nexthop)
 
     

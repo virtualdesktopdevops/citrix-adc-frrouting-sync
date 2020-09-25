@@ -6,8 +6,7 @@ import getopt
 import os
 import daemon
 import argparse
-import logging
-import time
+import logging.config
 import citrix_adc_frrouting.sync
 from daemon import pidfile
 
@@ -16,19 +15,16 @@ debug_enabled = False
 # folder where script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
 def main(config: dict, log_file: str, daemon: bool ):
-    # Configure logging
-    logger = logging.getLogger('eg_daemon')
-    logger.setLevel(logging.INFO)
-
-    fh = logging.FileHandler(log_file)
-    fh.setLevel(logging.INFO)
-
-    formatstr = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    formatter = logging.Formatter(formatstr)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+    #Configure logging
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.INFO)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.DEBUG)
+    logging.basicConfig(
+        handlers=[file_handler,stdout_handler], 
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.DEBUG,)
 
     # Run sync
     if config.has_option('ADC', 'NITRO_URL') and config.has_option('ADC', 'PASSWORD') and config.has_option('ADC', 'LOGIN') and config.has_option('ADC', 'CONTAINER_IP_ADDRESS'):
@@ -39,18 +35,12 @@ def main(config: dict, log_file: str, daemon: bool ):
             config['ADC']['CONTAINER_IP_ADDRESS'])
 
         if daemon:
-            logger.info("Initializing periodic sync every 5 seconds as daemon")
-            while True:
-                logger.info("Beginning sync")
-                sync_engine.start_sync()
-                logger.info("End of sync")
-                time.sleep(5)  
+            sync_engine.start_sync_daemon()
         else:
             sync_engine.start_sync()
               
     else:
         print('Missing at least one of the NITRO_URL, LOGIN, or PASSWORD configuration parameters')
-        logger.error('Missing at least one of the NITRO_URL, LOGIN, or PASSWORD configuration parameters')
 
 def start_daemon(pid_file: str, log_file: str, config: dict):
     """
