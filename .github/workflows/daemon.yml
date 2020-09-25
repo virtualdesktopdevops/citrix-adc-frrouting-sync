@@ -2,11 +2,7 @@
 
 name: Daemon integration testing
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   daemon_integration_testing:
@@ -24,10 +20,10 @@ jobs:
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
-        run: |
+      run: |
         sudo ./run.py --config sample-config/config.ini -d
     - name: Start frrouting
-        run: |
+      run: |
         sudo service frr start
     - name: Configure integration testing environment and start Citrix ADC CPX
       run: |
