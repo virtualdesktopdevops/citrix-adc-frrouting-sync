@@ -18,7 +18,8 @@ jobs:
         curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
-        sudo apt update && sudo apt install frr frr-pythontools
+        sudo apt update && sudo apt install frr frr-pythontools python3-pip
+        sudo pip3 install python-daemon==2.2.4
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
       run: |
         sudo ./run.py --config sample-config/config.ini -d
