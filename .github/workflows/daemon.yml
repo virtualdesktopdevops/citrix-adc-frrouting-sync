@@ -1,6 +1,6 @@
 # This workflow will test citrix-adc-frrouting-sync as a daemon
 
-name: Python package
+name: Daemon integration testing
 
 on:
   push:
