@@ -1,5 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow will test citrix-adc-frrouting-sync as a daemon
 
 name: Python package
 
@@ -10,35 +9,7 @@ on:
     branches: [ master ]
 
 jobs:
-  unit_testing:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest mock requests
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
-
-
-  integration_testing:
+  daemon_integration_testing:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -52,8 +23,13 @@ jobs:
         FRRVER="frr-stable"
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
+    - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
+        run: |
+        sudo ./run.py --config sample-config/config.ini -d
+    - name: Start frrouting
+        run: |
         sudo service frr start
-    - name: Configure integration testing environment
+    - name: Configure integration testing environment and start Citrix ADC CPX
       run: |
         echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
         docker-compose -f docker-compose.ci.yml up -d
@@ -62,20 +38,19 @@ jobs:
         sleep 90
         echo 'Testing NITRO API access'
         curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
+    - name: Integration testing with Citrix ADC CPX 13
+      run: |
+        echo "########### Create new LB vserver and test route injection when LB vserver is up ###########"
         echo 'Injecting initial config'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add ns ip 10.1.2.3 255.255.255.255 -type VIP -hostroute ENABLED'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'enable ns feature LoadBalancing'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add service google_ssl_svc 216.58.206.227 SSL 443'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add lb vserver google_http_vsrv HTTP 10.1.2.3 80'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'bind lb vserver google_http_vsrv google_ssl_svc'
-    - name: Integration testing with Citrix ADC CPX 13
-      run: |
-        echo "########### Testing route injection when LB vserver is up ###########"
-        sudo ./run.py --config sample-config/config.ini
+        wait(10)
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
-        wait(5)
-        sudo ./run.py --config sample-config/config.ini
+        wait(10)
         sudo vtysh -c 'show ip route tag 99'
 
