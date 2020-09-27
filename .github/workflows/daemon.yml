@@ -15,6 +15,7 @@ jobs:
         python-version: 3.8
     - name: Install python dependencies
       run: |
+        sudo apt-get update && sudo apt-get install python-dev-is-python3
         python -m pip install --upgrade pip
         pip install flake8 pytest mock
         if [ -f requirements.txt ]; then sudo pip install -r requirements.txt; fi
@@ -41,6 +42,7 @@ jobs:
         curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
     - name: Integration testing with Citrix ADC CPX 13
       run: |
+        pydoc modules
         echo "########### Create new LB vserver and test route injection when LB vserver is up ###########"
         echo 'Injecting initial config'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add ns ip 10.1.2.3 255.255.255.255 -type VIP -hostroute ENABLED'
