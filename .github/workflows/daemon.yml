@@ -24,6 +24,8 @@ jobs:
         FRRVER="frr-stable"
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
       run: |
         sudo pydoc modules
