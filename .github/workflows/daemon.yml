@@ -23,11 +23,8 @@ jobs:
         FRRVER="frr-stable"
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
       run: |
-        sudo pydoc modules
         sudo ./run.py --config sample-config/config.ini -d
     - name: Start frrouting
       run: |
@@ -50,10 +47,10 @@ jobs:
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add service google_ssl_svc 216.58.206.227 SSL 443'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add lb vserver google_http_vsrv HTTP 10.1.2.3 80'
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'bind lb vserver google_http_vsrv google_ssl_svc'
-        wait(10)
+        sleep 10
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
-        wait(10)
+        sleep 10
         sudo vtysh -c 'show ip route tag 99'
 
