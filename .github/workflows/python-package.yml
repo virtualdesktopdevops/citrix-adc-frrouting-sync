@@ -29,9 +29,11 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Test with pytest
       run: |
-        py.test-3
+        pytest
     - name: Install integration testing dependencies
       run: |
         curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
