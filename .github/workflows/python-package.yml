@@ -31,7 +31,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        py.test-3
     - name: Install integration testing dependencies
       run: |
         curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
