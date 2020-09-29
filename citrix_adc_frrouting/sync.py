@@ -45,6 +45,7 @@ class SyncService():
       self.__remove_orphaned_hostroutes(orphaned_frrouting_routes, self.nexthop)
     else:
       logger.error('Unable to connect parse Virtual IP addresses in Nitro response')
+      self.__remove_orphaned_hostroutes(frrouting_vip_routes_to_process, self.nexthop)
 
 
   def __get_frrouting_hostroutes(self, tag):
@@ -69,8 +70,7 @@ class SyncService():
           objecttype="nsip",
           params="args=type:VIP"
       ).json()
-    except requests.exceptions.ConnectionError as ex:
-      print(ex)
+    except requests.exceptions.ConnectionError:
       logger.error("Unable to connect to Citrix ADC NITRO API at " + self.nitro_url)
       return {}
 
