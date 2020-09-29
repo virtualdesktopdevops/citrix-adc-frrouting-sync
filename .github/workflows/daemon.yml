@@ -40,17 +40,5 @@ jobs:
         curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
     - name: Integration testing with Citrix ADC CPX 13
       run: |
-        echo "########### Create new LB vserver and test route injection when LB vserver is up ###########"
-        echo 'Injecting initial config'
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add ns ip 10.1.2.3 255.255.255.255 -type VIP -hostroute ENABLED'
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'enable ns feature LoadBalancing'
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add service google_ssl_svc 216.58.206.227 SSL 443'
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add lb vserver google_http_vsrv HTTP 10.1.2.3 80'
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'bind lb vserver google_http_vsrv google_ssl_svc'
-        sleep 10
-        sudo vtysh -c 'show ip route tag 99'
-        echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
-        docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
-        sleep 10
-        sudo vtysh -c 'show ip route tag 99'
+        sudo python3 -m pytest tests/integration/
 
