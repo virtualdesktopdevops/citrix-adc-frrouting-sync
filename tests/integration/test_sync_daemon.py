@@ -70,7 +70,7 @@ class TestSyncDaemon(TestCase):
         os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add lb vserver facebook_http_vsrv HTTP 11.1.2.3 80'")
         os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'bind lb vserver facebook_http_vsrv facebook_ssl_svc'")
 
-        os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add service twitter_ssl_svc 179.60.195.36 SSL 443'")
+        os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add service twitter_ssl_svc 104.244.42.65 SSL 443'")
         os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add ns ip 12.1.2.3 255.255.255.255 -type VIP -hostroute ENABLED'")
         os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'add lb vserver twitter_http_vsrv HTTP 12.1.2.3 80'")
         os.system("docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'bind lb vserver twitter_http_vsrv twitter_ssl_svc'")
