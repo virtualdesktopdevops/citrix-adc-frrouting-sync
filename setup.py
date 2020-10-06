@@ -12,11 +12,11 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/virtualdesktopdevops/citrix-adc-frrouting-sync",
-    packages=["citrix_adc_frrouting_sync"],
+    packages=["citrix_adc_frrouting"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.5',
 )
