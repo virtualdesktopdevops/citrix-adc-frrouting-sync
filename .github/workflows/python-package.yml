@@ -110,20 +110,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.8
     - name: Install packaging dependencies
       run: |
-        sudo apt-get install python3-setuptools python3-stdeb python3-all python-all python-setuptools dh-python python-setuptools
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+        sudo apt-get install python3-setuptools python3-stdeb python3-all python-all dh-python python-setuptools
     - name: Build DEB package
       run: |
         python3 setup.py --command-packages=stdeb.command sdist_dsc
         cd deb_dist/citrix-adc-frrouting-sync-0.0.1
-        cp ../../python3-citrix_adc_frrouting_sync.postinst debian/
+        cp ../../debian/python3-citrix-adc-frrouting-sync.postinst debian/
         dpkg-buildpackage -rfakeroot -uc -us
 
 
