@@ -117,7 +117,11 @@ jobs:
       run: |
         python3 setup.py --command-packages=stdeb.command sdist_dsc
         cd deb_dist/citrix-adc-frrouting-sync-0.0.1
-        cp ../../debian/python3-citrix-adc-frrouting-sync.postinst debian/
+        cp ../../debian/python3-citrix-adc-frrouting-sync.* debian/
         dpkg-buildpackage -rfakeroot -uc -us
+    - uses: actions/upload-artifact@v2
+      with:
+        name: python3-citrix-adc-frrouting-sync
+        path: deb_dist/python3-citrix-adc-frrouting-sync_*.deb
 
 
