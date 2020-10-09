@@ -58,12 +58,12 @@ jobs:
     - name: Integration testing with Citrix ADC CPX 13
       run: |
         echo "########### Testing route injection when LB vserver is up ###########"
-        sudo ./run.py --config sample-config/config.ini
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
         sleep 5
-        sudo ./run.py --config sample-config/config.ini
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
 
   packaging:
@@ -76,7 +76,7 @@ jobs:
         python-version: 3.8
     - name: Install packaging dependencies
       run: |
-        sudo apt-get install python3-stdeb python3-all python-all dh-python python-setuptools
+        sudo apt-get install python3-setuptools python3-stdeb python3-all python-all python-setuptools dh-python python-setuptools
     - name: Build DEB package
       run: |
         python3 setup.py --command-packages=stdeb.command sdist_dsc

@@ -26,7 +26,7 @@ jobs:
         sudo apt update && sudo apt install frr frr-pythontools
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
       run: |
-        sudo ./run.py --config sample-config/config.ini -d
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini -d
     - name: Start frrouting
       run: |
         sudo service frr start
