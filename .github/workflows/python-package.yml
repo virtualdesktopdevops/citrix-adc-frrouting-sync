@@ -129,6 +129,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: python3-citrix-adc-frrouting-sync
+        path: deb_dist/python3-citrix-adc-frrouting-sync_*.deb
     - name: Install debian package
       run: |
         sudo dpkg -i python3-citrix-adc-frrouting-sync/python3-citrix-adc-frrouting-sync_*.deb
@@ -138,8 +142,5 @@ jobs:
         sudo systemctl start citrix-adc-frrouting-sync
         sudo systemctl status citrix-adc-frrouting-sync
         sudo ps -ef | grep citrix
-    - uses: actions/download-artifact@v2
-      with:
-        name: python3-citrix-adc-frrouting-sync
-        path: deb_dist/python3-citrix-adc-frrouting-sync_*.deb
+    
 
