@@ -132,7 +132,6 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: python3-citrix-adc-frrouting-sync
-        path: deb_dist/python3-citrix-adc-frrouting-sync_*.deb
     - name: Install debian package
       run: |
         sudo dpkg -i python3-citrix-adc-frrouting-sync/python3-citrix-adc-frrouting-sync_*.deb
