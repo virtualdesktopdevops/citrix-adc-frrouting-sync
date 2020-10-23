@@ -132,11 +132,9 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: python3-citrix-adc-frrouting-sync
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Install debian package
       run: |
-        sudo dpkg -i python3-citrix-adc-frrouting-sync/python3-citrix-adc-frrouting-sync_*.deb
+        sudo dpkg -i python3-citrix-adc-frrouting-sync_*.deb || true
         sudo apt-get -f install
     - name: Start systemd service
       run: |
