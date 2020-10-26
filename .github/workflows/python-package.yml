@@ -35,7 +35,7 @@ jobs:
         python3 -m pytest tests/unit/
     - name: Install integration testing dependencies
       run: |
-        curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
         echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
@@ -84,7 +84,7 @@ jobs:
       run: |
         curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
-        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
     - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
       run: |
@@ -136,7 +136,7 @@ jobs:
       run: |
         curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
-        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools  
     - name: Install debian package
       run: |
