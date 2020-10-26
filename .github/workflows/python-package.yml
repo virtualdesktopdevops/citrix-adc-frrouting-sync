@@ -141,5 +141,16 @@ jobs:
         sudo systemctl start citrix-adc-frrouting-sync
         sudo systemctl status citrix-adc-frrouting-sync
         sudo ps -ef | grep citrix
-    
+    - name: Configure integration testing environment and start Citrix ADC CPX
+      run: |
+        echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
+        docker-compose -f docker-compose.ci.yml up -d
+        docker ps
+        echo 'Waiting for Citrix ADC CPX initialization (90s)'
+        sleep 90
+        echo 'Testing NITRO API access'
+        curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
+    - name: Integration testing with Citrix ADC CPX 13
+      run: |
+        sudo python3 -m pytest tests/integration/
 
