@@ -37,7 +37,7 @@ jobs:
       run: |
         curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
-        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
         sudo service frr start
     - name: Configure integration testing environment
@@ -82,7 +82,7 @@ jobs:
         if [ -f requirements.txt ]; then sudo pip3 install -r requirements.txt; fi
     - name: Install frrouting
       run: |
-        curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
         echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
@@ -132,6 +132,12 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: python3-citrix-adc-frrouting-sync
+    - name: Install frrouting
+      run: |
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
+        FRRVER="frr-stable"
+        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        sudo apt update && sudo apt install frr frr-pythontools  
     - name: Install debian package
       run: |
         sudo dpkg -i python3-citrix-adc-frrouting-sync_*.deb || true
