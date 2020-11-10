@@ -1,0 +1,10 @@
+[Unit]
+Description=Citrix ADC route health injection sync with FRRouting
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/citrixadcfrrsync.py --config /etc/citrix-adc-frrouting-sync/config.ini -d
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,2 @@
+systemd/citrix-adc-frrouting-sync.service /lib/systemd/system/
+sample-config/config.ini /etc/citrix-adc-frrouting-sync/

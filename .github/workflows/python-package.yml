@@ -35,9 +35,9 @@ jobs:
         python3 -m pytest tests/unit/
     - name: Install integration testing dependencies
       run: |
-        curl -s https://deb.frrouting.org/frr/keys.asc | sudo apt-key add
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
         FRRVER="frr-stable"
-        echo deb https://deb.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
         sudo apt update && sudo apt install frr frr-pythontools
         sudo service frr start
     - name: Configure integration testing environment
@@ -58,11 +58,106 @@ jobs:
     - name: Integration testing with Citrix ADC CPX 13
       run: |
         echo "########### Testing route injection when LB vserver is up ###########"
-        sudo ./run.py --config sample-config/config.ini
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
         echo "########### Disable service to down LB vserver to test rute withdrawal ###########"
         docker exec -i citrix-adc-frrouting-sync_cpx_130_1 cli_script.sh 'disable service google_ssl_svc'
         sleep 5
-        sudo ./run.py --config sample-config/config.ini
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini
         sudo vtysh -c 'show ip route tag 99'
+
+  daemon_integration_testing:
+    needs: unit_testing
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        sudo pip3 install pytest pytest-ordering
+        if [ -f requirements.txt ]; then sudo pip3 install -r requirements.txt; fi
+    - name: Install frrouting
+      run: |
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
+        FRRVER="frr-stable"
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        sudo apt update && sudo apt install frr frr-pythontools
+    - name: Start citrx-adc-frrouting-sync as a deamon before starting frrouting and citrix ADC to check survivability
+      run: |
+        sudo ./citrixadcfrrsync.py --config sample-config/config.ini -d
+    - name: Start frrouting
+      run: |
+        sudo service frr start
+    - name: Configure integration testing environment and start Citrix ADC CPX
+      run: |
+        echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
+        docker-compose -f docker-compose.ci.yml up -d
+        docker ps
+        echo 'Waiting for Citrix ADC CPX initialization (90s)'
+        sleep 90
+        echo 'Testing NITRO API access'
+        curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
+    - name: Integration testing with Citrix ADC CPX 13
+      run: |
+        sudo python3 -m pytest tests/integration/
+
+  packaging:
+    needs: daemon_integration_testing
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packaging dependencies
+      run: |
+        sudo apt-get install python3-setuptools python3-stdeb python3-all python-all dh-python python-setuptools
+    - name: Build DEB package
+      run: |
+        python3 setup.py --command-packages=stdeb.command sdist_dsc
+        cd deb_dist/citrix-adc-frrouting-sync-0.0.1
+        cp ../../debian/python3-citrix-adc-frrouting-sync.* debian/
+        dpkg-buildpackage -rfakeroot -uc -us
+    - uses: actions/upload-artifact@v2
+      with:
+        name: python3-citrix-adc-frrouting-sync
+        path: deb_dist/python3-citrix-adc-frrouting-sync_*.deb
+
+  deb_package_testing:
+    needs: packaging
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: python3-citrix-adc-frrouting-sync
+    - name: Install frrouting
+      run: |
+        curl -s https://deb-us.frrouting.org/frr/keys.asc | sudo apt-key add
+        FRRVER="frr-stable"
+        echo deb https://deb-us.frrouting.org/frr $(lsb_release -s -c) $FRRVER | sudo tee -a /etc/apt/sources.list.d/frr.list -
+        sudo apt update && sudo apt install frr frr-pythontools  
+    - name: Install debian package
+      run: |
+        sudo dpkg -i python3-citrix-adc-frrouting-sync_*.deb || true
+        sudo apt-get -f install
+    - name: Start systemd service
+      run: |
+        sudo systemctl start citrix-adc-frrouting-sync
+        sudo systemctl status citrix-adc-frrouting-sync
+        sudo ps -ef | grep citrix
+    - name: Configure integration testing environment and start Citrix ADC CPX
+      run: |
+        echo ${{ secrets.dockerhub_password }} | docker login -u ${{ secrets.dockerhub_login }} --password-stdin
+        docker-compose -f docker-compose.ci.yml up -d
+        docker ps
+        echo 'Waiting for Citrix ADC CPX initialization (90s)'
+        sleep 90
+        echo 'Testing NITRO API access'
+        curl -sS -H "X-NITRO-USER:nsroot" -H "X-NITRO-PASS:nsroot" http://localhost:9080/nitro/v1/config/server
+    - name: Integration testing with Citrix ADC CPX 13
+      run: |
+        sudo apt-get install python3-pytest
+        sudo python3 -m pytest tests/integration/
 
