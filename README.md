@@ -67,7 +67,7 @@ sudo yum install frr frr-pythontools
 
 ### Deploy Citrix ADC CPX
 #### Deploy Citrix ADC CPX using docker-compose
-The following `docker-compose.yml` files deploys a pair of Citrix ADC CPX containers.
+The following `docker-compose.yml` files deploys a pair of Citrix ADC CPX containers :
   - In a docker network with a fixed IP address to allow static routes configuration from the host to the container. Host mode is not used to make the deployment compatible with cloud virtual machines having a single network interface.
   - With least privileges, providing required `NET_ADMIN` permissions to the container, but running it as a non-root user.
   - Persisting the `/cpx` directory containing the Citrix ADC configuration files with a docker volume.
