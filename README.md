@@ -67,10 +67,18 @@ sudo yum install frr frr-pythontools
 
 ### Deploy Citrix ADC CPX
 #### Deploy Citrix ADC CPX using docker-compose
-The following `docker-compose.yml` deploys a pair of Citrix ADC CPX container :
+The following `docker-compose.yml` files deploys a pair of Citrix ADC CPX containers.
   - In a docker network with a fixed IP address to allow static routes configuration from the host to the container. Host mode is not used to make the deployment compatible with cloud virtual machines having a single network interface.
   - With least privileges, providing required `NET_ADMIN` permissions to the container, but running it as a non-root user.
   - Persisting the `/cpx` directory containing the Citrix ADC configuration files with a docker volume.
+
+**Both CPX instances have to be deployed on 2 different physical or virtual hosts for effective resiliency. IP anycast is not needed if they are deployed on the same host as they are deployed on the same L3 subnet : unicast VIP in the L3 subnet is enough.**
+
+IP Anycast is required when CPX HA pair is deployed on physical or virtual hosts being on disjoint L3 subnets.
+
+_First ADC instance deployed on host 192.168.1.10/24_ :
+
+`HOST: 192.168.1.10` environment variable is configured with the IP address of the docker host.
 
 ```
 version: '3'
@@ -102,7 +110,24 @@ services:
       cpx_net:
         ipv4_address: 172.18.0.254
 
-  cpx_130_2:
+networks:
+  cpx_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+
+```
+
+_Second ADC instance deployed on host 192.168.20.10/24_ :
+
+`HOST: 192.168.20.10` environment variable is configured with the IP address of the docker host.
+
+```
+version: '3'
+
+services:
+  cpx_130:
     image: store/citrix/citrixadccpx:13.0-36.29
     ports:
       - 4433:443/tcp
@@ -123,7 +148,7 @@ services:
     environment:
       EULA: 'yes'
       PLATFORM: 'CP1000'
-      HOST: 192.168.1.10
+      HOST: 192.168.20.10
     networks:
       cpx_net:
         ipv4_address: 172.18.0.253
@@ -137,7 +162,7 @@ networks:
 
 ```
 
-Then start the platform with `docker-compose up -d`
+Then start the platform with `docker-compose up -d` on both docker hosts.
 
 #### Configure a Citrix ADC CPX HA pair
 Use the `docker exec -i <CPX node name> cli_script.sh 'add ha node 1 <remote node IP> [-inc enabled]'` command on each CPX node to configure the CPX HA pair.
